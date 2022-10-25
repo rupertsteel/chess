@@ -1,0 +1,17 @@
+vcpkg_from_github(
+    OUT_SOURCE_PATH SOURCE_PATH
+    REPO "GerHobbelt/clipp"
+    REF f47c2bae46e0823ece9c3972ae522c8f996e0663
+    SHA512 a5655a16c57343a963cd38edaa6dedf36b69729163a111c0f1bea9b0f00ffa9a41cfe5141473449236470d8e115e723385dd7508bdbf965bfdb8159377ee8bba
+    HEAD_REF master
+)
+
+vcpkg_configure_cmake(
+    SOURCE_PATH ${SOURCE_PATH}
+    PREFER_NINJA
+)
+
+vcpkg_install_cmake()
+
+file(REMOVE_RECURSE ${CURRENT_PACKAGES_DIR}/debug)
+file(INSTALL ${SOURCE_PATH}/LICENSE DESTINATION ${CURRENT_PACKAGES_DIR}/share/clipp RENAME copyright)
