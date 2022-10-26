@@ -54,7 +54,7 @@ public:
 	int halfmoveSinceStateAdvance = 0;
 	int turn = 1;
 
-	//TODO: track state for enpasset
+	std::string enPassantSquare = "-"; //A complete hack for now, do this properly later.
 
 	static Board setupStandardBoard();
 

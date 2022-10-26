@@ -128,7 +128,7 @@ std::string Board::toFenString() const {
 	}
 
 	//TODO: print enpassant state once we track it.
-	returnString += fmt::format("- {} {}", halfmoveSinceStateAdvance, turn);
+	returnString += fmt::format("{} {} {}", enPassantSquare, halfmoveSinceStateAdvance, turn);
 
 	return returnString;
 }
