@@ -16,8 +16,12 @@ enum class PieceBits : uint8_t {
 	Queen = 5,
 	King = 6,
 
+	PieceMask = 7,
+
 	White = 8,
 	Black = 16,
+
+	SideMask = 24,
 
 	CanCastle = 32,
 };
@@ -59,6 +63,10 @@ public:
 	static Board setupStandardBoard();
 
 	std::string toFenString() const;
+
+	void play_lan(std::string_view sv);
+
+	static int squareToIndex(std::string_view sv);
 
 };
 

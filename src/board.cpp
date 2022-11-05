@@ -132,3 +132,51 @@ std::string Board::toFenString() const {
 
 	return returnString;
 }
+
+void Board::play_lan(std::string_view sv) {
+	// TODO: I currently don't handle piece names
+
+	auto startSquare = sv.substr(0, 2);
+
+	// TODO: I also don't handle capture letter
+
+	auto endSquare = sv.substr(2, 2);
+
+	auto startIndex = squareToIndex(startSquare);
+	auto endIndex = squareToIndex(endSquare);
+
+	enPassantSquare = "-";
+
+	if ((board[startIndex] & PieceBits::PieceMask) == PieceBits::Pawn) {
+		halfmoveSinceStateAdvance = 0;
+
+		int rankDiff = std::abs(startSquare[1] - endSquare[1]);
+		if (rankDiff == 2) {
+			enPassantSquare = startSquare;
+			if (toMove == Side::White) {
+				enPassantSquare[1]++;
+			} else {
+				enPassantSquare[1]--;
+			}
+		}
+
+	} else {
+		halfmoveSinceStateAdvance++;
+	}
+
+	board[endIndex] = board[startIndex];
+	board[startIndex] = PieceBits::None;
+
+	if (toMove == Side::White) {
+		toMove = Side::Black;
+	} else {
+		toMove = Side::White;
+		turn++;
+	}
+}
+
+int Board::squareToIndex(std::string_view sv) {
+	//TODO: validation
+
+	return sv[0] - 'a' + ('8' - sv[1]) * 8;
+}
