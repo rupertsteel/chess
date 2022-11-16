@@ -19,21 +19,9 @@ TEST_CASE("Fen string, early game", "[board]") {
 
 	CHECK(board.toFenString() == "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1");
 
-	//board.board[26] = board.board[10];
-	//board.board[10] = chess::PieceBits::None;
-	//board.toMove = chess::Side::White;
-	//board.turn++;
-	//board.enPassantSquare = "c6";
-
 	board.play_lan("c7c5");
 
 	CHECK(board.toFenString() == "rnbqkbnr/pp1ppppp/8/2p5/4P3/8/PPPP1PPP/RNBQKBNR w KQkq c6 0 2");
-
-	//board.board[45] = board.board[62];
-	//board.board[62] = chess::PieceBits::None;
-	//board.toMove = chess::Side::Black;
-	//board.halfmoveSinceStateAdvance++;
-	//board.enPassantSquare = "-";
 
 	board.play_lan("g1f3");
 
@@ -41,9 +29,19 @@ TEST_CASE("Fen string, early game", "[board]") {
 
 }
 
-TEST_CASE("Square to index", "[board]") {
+TEST_CASE("Square to index", "[board][index]") {
 	CHECK(chess::Board::squareToIndex("a8") == 0);
 	CHECK(chess::Board::squareToIndex("h8") == 7);
 	CHECK(chess::Board::squareToIndex("a1") == 56);
 	CHECK(chess::Board::squareToIndex("h1") == 63);
+}
+
+TEST_CASE("Index to square and back", "[board][index]") {
+	for (int index = 0; index < 64; index++) {
+		auto square = chess::Board::indexToSquare(index);
+		CAPTURE(square);
+		auto twiceSquare = chess::Board::indexToSquare(chess::Board::squareToIndex(square));
+		CAPTURE(twiceSquare);
+		CHECK(index == chess::Board::squareToIndex(square));
+	}
 }

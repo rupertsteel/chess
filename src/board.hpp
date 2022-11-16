@@ -7,58 +7,41 @@
 
 namespace chess {
 
-enum class PieceBits : uint8_t {
-	None = 0,
-	Pawn = 1,
-	Rook = 2,
-	Knight = 3,
-	Bishop = 4,
-	Queen = 5,
-	King = 6,
+namespace PieceBits {
+	constexpr uint8_t None = 0;
+	constexpr uint8_t Pawn = 1;
+	constexpr uint8_t Rook = 2;
+	constexpr uint8_t Knight = 3;
+	constexpr uint8_t Bishop = 4;
+	constexpr uint8_t Queen = 5;
+	constexpr uint8_t King = 6;
 
-	PieceMask = 7,
+	constexpr uint8_t PieceMask = 7;
 
-	White = 8,
-	Black = 16,
+	constexpr uint8_t White = 8;
+	constexpr uint8_t Black = 16;
 
-	SideMask = 24,
+	constexpr uint8_t SideMask = 24;
 
-	CanCastle = 32,
-};
+	constexpr uint8_t CanCastle = 32;
+
+
+}
 
 enum class Side {
 	Black,
 	White
 };
 
-constexpr PieceBits operator|(PieceBits lhs, PieceBits rhs) {
-	using T = std::underlying_type_t<PieceBits>;
-	return static_cast<PieceBits>(static_cast<T>(lhs) | static_cast<T>(rhs));
-}
-
-constexpr PieceBits& operator|=(PieceBits& lhs, PieceBits rhs) {
-	lhs = lhs | rhs;
-	return lhs;
-}
-
-constexpr PieceBits operator&(PieceBits lhs, PieceBits rhs) {
-	using T = std::underlying_type_t<PieceBits>;
-	return static_cast<PieceBits>(static_cast<T>(lhs) & static_cast<T>(rhs));
-}
-
-constexpr PieceBits& operator&=(PieceBits& lhs, PieceBits rhs) {
-	lhs = lhs & rhs;
-	return lhs;
-}
 
 class Board {
 public:
-	std::array<PieceBits, 64> board {};
+	std::array<uint8_t, 64> board {};
 	Side toMove = Side::White;
 	int halfmoveSinceStateAdvance = 0;
 	int turn = 1;
 
-	std::string enPassantSquare = "-"; //A complete hack for now, do this properly later.
+	std::optional<uint8_t> en_passant_square;
 
 	static Board setupStandardBoard();
 
@@ -67,6 +50,7 @@ public:
 	void play_lan(std::string_view sv);
 
 	static int squareToIndex(std::string_view sv);
+	static std::string indexToSquare(uint8_t idx);
 
 };
 

@@ -128,7 +128,7 @@ std::string Board::toFenString() const {
 	}
 
 	//TODO: print enpassant state once we track it.
-	returnString += fmt::format("{} {} {}", enPassantSquare, halfmoveSinceStateAdvance, turn);
+	returnString += fmt::format("{} {} {}", en_passant_square.transform(indexToSquare).value_or("-"), halfmoveSinceStateAdvance, turn);
 
 	return returnString;
 }
@@ -145,18 +145,18 @@ void Board::play_lan(std::string_view sv) {
 	auto startIndex = squareToIndex(startSquare);
 	auto endIndex = squareToIndex(endSquare);
 
-	enPassantSquare = "-";
+	en_passant_square.reset();
 
 	if ((board[startIndex] & PieceBits::PieceMask) == PieceBits::Pawn) {
 		halfmoveSinceStateAdvance = 0;
 
 		int rankDiff = std::abs(startSquare[1] - endSquare[1]);
 		if (rankDiff == 2) {
-			enPassantSquare = startSquare;
+			en_passant_square = startIndex;
 			if (toMove == Side::White) {
-				enPassantSquare[1]++;
+				*en_passant_square -= 8;
 			} else {
-				enPassantSquare[1]--;
+				*en_passant_square += 8;
 			}
 		}
 
@@ -180,3 +180,14 @@ int Board::squareToIndex(std::string_view sv) {
 
 	return sv[0] - 'a' + ('8' - sv[1]) * 8;
 }
+
+std::string Board::indexToSquare(uint8_t idx) {
+	std::string returnStr;
+	returnStr.push_back('a' + (idx & 0x7));
+	returnStr.push_back('8' - ((idx & 0x38) >> 3));
+
+	return returnStr;
+}
+
+
+
