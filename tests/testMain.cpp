@@ -45,3 +45,16 @@ TEST_CASE("Index to square and back", "[board][index]") {
 		CHECK(index == chess::Board::squareToIndex(square));
 	}
 }
+
+TEST_CASE("Perft tests", "[board]") {
+	CHECK(chess::Board::perft(0) == 1);
+	CHECK(chess::Board::perft(1) == 20);
+	CHECK(chess::Board::perft(2) == 400);
+	CHECK(chess::Board::perft(3) == 8902);
+	CHECK(chess::Board::perft(4) == 1978281);
+	CHECK(chess::Board::perft(5) == 4865609);
+	CHECK(chess::Board::perft(6) == 119060324);
+	CHECK(chess::Board::perft(7) == 3195901860);
+	CHECK(chess::Board::perft(8) == 84998978956);
+	CHECK(chess::Board::perft(9) == 2439530234167);
+}

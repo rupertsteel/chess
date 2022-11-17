@@ -4,6 +4,7 @@
 #include <array>
 #include <string>
 #include <optional>
+#include <vector>
 
 namespace chess {
 
@@ -33,6 +34,33 @@ enum class Side {
 	White
 };
 
+// Handles a fully reversible move tracking, so we need to go forward and back
+// From square (make and unmake)
+// To square (make and unmake)
+// Captured piece (unmake)
+// To promote piece (make and unmake (if this is set, then the unit was a pawn))
+//
+// makeMove()
+//   if isCastleMove do other stuff - do this later
+//   if 
+//   board[toSquare] = board[fromSquare]
+//   board[fromSquare] = 0
+
+struct Move {
+	uint8_t from_square;
+	uint8_t to_square;
+	uint8_t captured_piece;
+	uint8_t promotion_piece;
+	std::optional<uint8_t> prev_en_passant_square;
+	std::optional<uint8_t> en_passant_square;
+	int prev_half_move_clock;
+	bool isCastleMove;
+	bool isEnpassantMove;
+
+	constexpr bool isPromotion() const {
+		return !!promotion_piece;
+	}
+};
 
 class Board {
 public:
@@ -49,9 +77,31 @@ public:
 
 	void play_lan(std::string_view sv);
 
+	// Makes a move
+	// This assumes move is a valid move
+	void make_move(const Move& move);
+	void unmake_move(const Move& move);
+
+	static uint8_t sideToPieceBit(Side side);
+	std::vector<Move> getPseudoLegalMoves() const;
+
+	void calcPawnMoves(std::vector<Move>& toAppend, uint8_t loc) const;
+	void calcKnightMoves(std::vector<Move>& toAppend, uint8_t loc) const;
+
+	uint64_t perftLevel(int depth);
+
+	static uint64_t perft(int depth);
+
 	static int squareToIndex(std::string_view sv);
 	static std::string indexToSquare(uint8_t idx);
 
+	static constexpr uint8_t getRank(uint8_t loc) {
+		return loc >> 3;
+	}
+
+	static constexpr uint8_t getFile(uint8_t loc) {
+		return loc & 0x7;
+	}
 };
 
 }

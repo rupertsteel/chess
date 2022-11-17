@@ -1,3 +1,4 @@
+#include "board.hpp"
 
 #include "board.hpp"
 
@@ -175,6 +176,69 @@ void Board::play_lan(std::string_view sv) {
 	}
 }
 
+void Board::make_move(const Move& move) {
+	if (move.isCastleMove) {
+		return;
+	}
+	if (move.isEnpassantMove) {
+		return;
+	}
+
+	if (move.promotion_piece || (board[move.from_square] & PieceBits::Pawn) || board[move.to_square]) {
+		halfmoveSinceStateAdvance = 0;
+	} else {
+		halfmoveSinceStateAdvance++;
+	}
+
+	if (toMove == Side::White) {
+		toMove = Side::Black;
+	} else {
+		toMove = Side::White;
+		turn++;
+	}
+
+	if (move.promotion_piece) {
+		board[move.to_square] = (board[move.from_square] & ~PieceBits::PieceMask) | move.promotion_piece;
+	} else {
+		board[move.to_square] = board[move.from_square];
+	}
+
+	board[move.from_square] = 0;
+
+	en_passant_square = move.en_passant_square;
+}
+
+void Board::unmake_move(const Move& move) {
+	if (move.isCastleMove) {
+		return;
+	}
+	if (move.isEnpassantMove) {
+		return;
+	}
+
+	halfmoveSinceStateAdvance = move.prev_half_move_clock;
+
+	if (toMove == Side::White) {
+		turn--;
+		toMove = Side::Black;
+	} else {
+		toMove = Side::White;
+	}
+
+	if (move.promotion_piece) {
+		board[move.from_square] = (board[move.to_square] & ~PieceBits::PieceMask) | PieceBits::Pawn;
+	} else {
+		board[move.from_square] = board[move.to_square];
+	}
+	if (move.captured_piece) {
+		board[move.to_square] = move.captured_piece;
+	} else {
+		board[move.to_square] = 0;
+	}
+
+	en_passant_square = move.prev_en_passant_square;
+}
+
 int Board::squareToIndex(std::string_view sv) {
 	//TODO: validation
 
@@ -189,5 +253,120 @@ std::string Board::indexToSquare(uint8_t idx) {
 	return returnStr;
 }
 
+uint8_t chess::Board::sideToPieceBit(Side side) {
+	if (side == Side::Black) {
+		return PieceBits::Black;
+	} else {
+		return PieceBits::White;
+	}
+}
 
+std::vector<Move> Board::getPseudoLegalMoves() const {
+	std::vector<Move> returnMoves;
 
+	auto sideBitand = sideToPieceBit(toMove);
+
+	for (int i = 0; i < 64; i++) {
+		if (board[i] & sideBitand) {
+			switch (board[i] & PieceBits::PieceMask) {
+			// case PieceBits::Pawn:
+			// 	calcPawnMoves(returnMoves, i);
+			// 	break;
+			case PieceBits::Knight:
+				calcKnightMoves(returnMoves, i);
+				break;
+			}
+		}
+	}
+
+	return returnMoves;
+}
+
+void Board::calcPawnMoves(std::vector<Move>& toAppend, uint8_t loc) const {
+	
+}
+
+void Board::calcKnightMoves(std::vector<Move>& toAppend, uint8_t loc) const {
+
+	bool isLeft2Valid = getFile(loc) >= 2;
+	bool isLeft1Valid = getFile(loc) >= 1;
+	bool isRight1Valid = getFile(loc) <= 6;
+	bool isRight2Valid = getFile(loc) <= 5;
+
+	bool isTop2Valid = getRank(loc) >= 2;
+	bool isTop1Valid = getRank(loc) >= 1;
+	bool isBot1Valid = getRank(loc) <= 6;
+	bool isBot2Valid = getRank(loc) <= 5;
+
+	auto sideBitand = sideToPieceBit(toMove);
+
+	auto calcMove = [&](uint8_t newLoc) {
+		if (board[newLoc] != 0) {
+			if ((board[newLoc] & PieceBits::SideMask) == sideBitand) {
+				return;
+			}
+		}
+
+		Move m{
+			loc,
+			newLoc,
+			board[newLoc],
+			0,
+			en_passant_square,
+			std::nullopt,
+			halfmoveSinceStateAdvance,
+			false,
+			false
+		};
+		toAppend.push_back(m);
+	};
+
+	if (isTop2Valid && isRight1Valid) {
+		calcMove(loc - 15);
+	}
+	if (isTop1Valid && isRight2Valid) {
+		calcMove(loc - 6);
+	}
+	if (isBot1Valid && isRight2Valid) {
+		calcMove(loc + 10);
+	}
+	if (isBot2Valid && isRight1Valid) {
+		calcMove(loc + 17);
+	}
+	if (isBot2Valid && isLeft1Valid) {
+		calcMove(loc + 15);
+	}
+	if (isBot1Valid && isLeft2Valid) {
+		calcMove(loc + 6);
+	}
+	if (isTop1Valid && isLeft2Valid) {
+		calcMove(loc - 10);
+	}
+	if (isTop2Valid && isLeft1Valid) {
+		calcMove(loc - 17);
+	}
+}
+
+uint64_t Board::perftLevel(int depth) {
+	if (depth == 0) {
+		return 1;
+	}
+
+	auto moves = getPseudoLegalMoves();
+
+	uint64_t sumMoves = 0;
+
+	for (auto& move : moves) {
+		make_move(move);
+		sumMoves += perftLevel(depth - 1);
+		unmake_move(move);
+	}
+
+	return sumMoves;
+}
+
+uint64_t Board::perft(int depth) {
+	Board board = setupStandardBoard();
+
+	return board.perftLevel(depth);
+}
