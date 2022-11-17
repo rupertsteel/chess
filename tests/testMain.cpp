@@ -46,7 +46,7 @@ TEST_CASE("Index to square and back", "[board][index]") {
 	}
 }
 
-TEST_CASE("Perft tests", "[board]") {
+TEST_CASE("Perft tests", "[board][!mayfail]") {
 	CHECK(chess::Board::perft(0) == 1);
 	CHECK(chess::Board::perft(1) == 20);
 	CHECK(chess::Board::perft(2) == 400);
