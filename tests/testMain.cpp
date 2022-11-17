@@ -2,6 +2,7 @@
 #include <board.hpp>
 
 #include "catch2/catch_test_macros.hpp"
+#include "catch2/benchmark/catch_benchmark.hpp"
 
 TEST_CASE("Fen string, initial board state", "[board]") {
 	auto board = chess::Board::setupStandardBoard();
@@ -57,4 +58,23 @@ TEST_CASE("Perft tests", "[board][!mayfail]") {
 	CHECK(chess::Board::perft(7) == 3195901860);
 	CHECK(chess::Board::perft(8) == 84998978956);
 	CHECK(chess::Board::perft(9) == 2439530234167);
+
+	BENCHMARK("Perft 5") {
+		return chess::Board::perft(5);
+	};
+	BENCHMARK("Perft 6") {
+		return chess::Board::perft(6);
+	};
+	BENCHMARK("Perft 7") {
+		return chess::Board::perft(7);
+	};
+	BENCHMARK("Perft 8") {
+		return chess::Board::perft(8);
+	};
+	BENCHMARK("Perft 9") {
+		return chess::Board::perft(9);
+	};
+	BENCHMARK("Perft 10") {
+		return chess::Board::perft(10);
+	};
 }
